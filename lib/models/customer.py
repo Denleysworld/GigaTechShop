@@ -1,3 +1,5 @@
+# models/customer.py
+
 from .config import conn, cursor
 
 class Customer:
@@ -8,17 +10,14 @@ class Customer:
         self.phone = phone
         self.address = address
 
-    def __repr__(self):
-        return f"<Customer {self.name} {self.email}>"
-
     @classmethod
     def create_table(cls):
         sql = """
             CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name VARCHAR NOT NULL,
-            email VARCHAR NOT NULL,
-            phone VARCHAR,
+            name TEXT NOT NULL,
+            email TEXT,
+            phone TEXT,
             address TEXT
             )
         """
@@ -26,21 +25,21 @@ class Customer:
         conn.commit()
         print("Customer table created successfully")
 
-    @classmethod
-    def drop_table(cls):
-        sql = "DROP TABLE IF EXISTS customers;"
-        cursor.execute(sql)
-        conn.commit()
-        print("Customer table dropped successfully")
-
     def save(self):
-        sql = """
-            INSERT INTO customers (name, email, phone, address)
-            VALUES (?, ?, ?, ?)
-        """
-        cursor.execute(sql, (self.name, self.email, self.phone, self.address))
+        if self.id:
+            sql = """
+                UPDATE customers SET name=?, email=?, phone=?, address=?
+                WHERE id=?
+            """
+            cursor.execute(sql, (self.name, self.email, self.phone, self.address, self.id))
+        else:
+            sql = """
+                INSERT INTO customers (name, email, phone, address)
+                VALUES (?, ?, ?, ?)
+            """
+            cursor.execute(sql, (self.name, self.email, self.phone, self.address))
+            self.id = cursor.lastrowid
         conn.commit()
-        self.id = cursor.lastrowid
 
     @classmethod
     def create(cls, name, email, phone, address):
@@ -49,8 +48,41 @@ class Customer:
         return customer
 
     @classmethod
+    def find_by_id(cls, customer_id):
+        sql = "SELECT * FROM customers WHERE id = ?"
+        cursor.execute(sql, (customer_id,))
+        row = cursor.fetchone()
+        return cls(*row) if row else None
+
+    def delete(self):
+        if self.id is not None:
+            sql = "DELETE FROM customers WHERE id=?"
+            cursor.execute(sql, (self.id,))
+            conn.commit()
+
+    @classmethod
     def find_by_id(cls, id):
         sql = "SELECT * FROM customers WHERE id = ?"
         cursor.execute(sql, (id,))
         row = cursor.fetchone()
-        return cls(*row) if row else None
+        if row:
+            return cls(*row)
+        else:
+            return None
+
+    @classmethod
+    def select(cls):
+        sql = "SELECT * FROM customers"
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        customers = []
+        for row in rows:
+            customer = cls(*row)
+            customers.append(customer)
+        return customers
+    @classmethod
+    def drop_table(cls):
+        sql = "DROP TABLE IF EXISTS customers"
+        cursor.execute(sql)
+        conn.commit()
+        print("Customer table dropped successfully.")

@@ -1,6 +1,6 @@
-# models/product.py
 
-from config import conn, cursor
+
+from .config import conn, cursor
 
 class Product:
     def __init__(self, name, description, price, quantity, id=None):
@@ -83,3 +83,4 @@ class Product:
         sql = "DELETE FROM products WHERE id = ?"
         cursor.execute(sql, (self.id,))
         conn.commit()
+        print(f"Product ID {self.id} deleted successfully.")
