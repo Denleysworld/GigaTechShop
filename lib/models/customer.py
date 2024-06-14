@@ -1,25 +1,25 @@
 from .config import conn, cursor
 
 class Customer:
-    def __init__(self, name, email, phone, address, customer_id=None):
-        self.customer_id = customer_id
+    def __init__(self, id, name, email, phone, address):
+        self.id = id
         self.name = name
         self.email = email
         self.phone = phone
         self.address = address
 
     def __repr__(self):
-        return f"<Customer {self.customer_id} {self.name}>"
+        return f"<Customer {self.id} {self.name} {self.email} {self.phone} {self.address}>"
 
     @classmethod
     def create_table(cls):
         sql = """
             CREATE TABLE IF NOT EXISTS customers (
-            customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT NOT NULL,
-            phone TEXT NOT NULL,
-            address TEXT NOT NULL
+            phone TEXT,
+            address TEXT
             )
         """
         cursor.execute(sql)
@@ -40,18 +40,18 @@ class Customer:
         """
         cursor.execute(sql, (self.name, self.email, self.phone, self.address))
         conn.commit()
-        self.customer_id = cursor.lastrowid
+        self.id = cursor.lastrowid
 
     @classmethod
     def create(cls, name, email, phone, address):
-        customer = cls(name, email, phone, address)
+        customer = cls(None, name, email, phone, address)
         customer.save()
         return customer
 
     @classmethod
-    def find_by_id(cls, customer_id):
-        sql = "SELECT * FROM customers WHERE customer_id = ?"
-        cursor.execute(sql, (customer_id,))
+    def find_by_id(cls, id):
+        sql = "SELECT * FROM customers WHERE id = ?"
+        cursor.execute(sql, (id,))
         row = cursor.fetchone()
         return cls(*row) if row else None
 
@@ -60,18 +60,23 @@ class Customer:
         sql = "SELECT * FROM customers"
         cursor.execute(sql)
         rows = cursor.fetchall()
-        return [cls(*row) for row in rows]
+        customers = [cls(*row) for row in rows]
+        return customers
 
-    def update(self, name, email, phone, address):
+    def delete(self):
+        sql = "DELETE FROM customers WHERE id = ?"
+        cursor.execute(sql, (self.id,))
+        conn.commit()
+
+    def update(self, name=None, email=None, phone=None, address=None):
+        self.name = name or self.name
+        self.email = email or self.email
+        self.phone = phone or self.phone
+        self.address = address or self.address
         sql = """
             UPDATE customers
             SET name = ?, email = ?, phone = ?, address = ?
-            WHERE customer_id = ?
+            WHERE id = ?
         """
-        cursor.execute(sql, (name, email, phone, address, self.customer_id))
-        conn.commit()
-
-    def delete(self):
-        sql = "DELETE FROM customers WHERE customer_id = ?"
-        cursor.execute(sql, (self.customer_id,))
+        cursor.execute(sql, (self.name, self.email, self.phone, self.address, self.id))
         conn.commit()

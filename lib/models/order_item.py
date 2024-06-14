@@ -1,27 +1,27 @@
 from .config import conn, cursor
 
 class OrderItem:
-    def __init__(self, order_id, product_id, quantity, price, order_item_id=None):
-        self.order_item_id = order_item_id
+    def __init__(self, id, order_id, product_id, quantity, price):
+        self.id = id
         self.order_id = order_id
         self.product_id = product_id
         self.quantity = quantity
         self.price = price
 
     def __repr__(self):
-        return f"<OrderItem {self.order_id} {self.product_id} {self.quantity}>"
+        return f"<OrderItem {self.id} {self.order_id} {self.product_id} {self.quantity} {self.price}>"
 
     @classmethod
     def create_table(cls):
         sql = """
             CREATE TABLE IF NOT EXISTS order_items (
-            order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id INTEGER NOT NULL,
             product_id INTEGER NOT NULL,
             quantity INTEGER NOT NULL,
             price DECIMAL(10, 2) NOT NULL,
-            FOREIGN KEY (order_id) REFERENCES orders(order_id),
-            FOREIGN KEY (product_id) REFERENCES products(product_id)
+            FOREIGN KEY (order_id) REFERENCES orders(id),
+            FOREIGN KEY (product_id) REFERENCES products(id)
             )
         """
         cursor.execute(sql)
@@ -42,18 +42,18 @@ class OrderItem:
         """
         cursor.execute(sql, (self.order_id, self.product_id, self.quantity, self.price))
         conn.commit()
-        self.order_item_id = cursor.lastrowid
+        self.id = cursor.lastrowid
 
     @classmethod
     def create(cls, order_id, product_id, quantity, price):
-        order_item = cls(order_id, product_id, quantity, price)
+        order_item = cls(None, order_id, product_id, quantity, price)
         order_item.save()
         return order_item
 
     @classmethod
-    def find_by_id(cls, order_item_id):
-        sql = "SELECT * FROM order_items WHERE order_item_id = ?"
-        cursor.execute(sql, (order_item_id,))
+    def find_by_id(cls, id):
+        sql = "SELECT * FROM order_items WHERE id = ?"
+        cursor.execute(sql, (id,))
         row = cursor.fetchone()
         return cls(*row) if row else None
 
@@ -62,18 +62,23 @@ class OrderItem:
         sql = "SELECT * FROM order_items"
         cursor.execute(sql)
         rows = cursor.fetchall()
-        return [cls(*row) for row in rows]
+        order_items = [cls(*row) for row in rows]
+        return order_items
 
-    def update(self, order_id, product_id, quantity, price):
+    def delete(self):
+        sql = "DELETE FROM order_items WHERE id = ?"
+        cursor.execute(sql, (self.id,))
+        conn.commit()
+
+    def update(self, order_id=None, product_id=None, quantity=None, price=None):
+        self.order_id = order_id or self.order_id
+        self.product_id = product_id or self.product_id
+        self.quantity = quantity if quantity is not None else self.quantity
+        self.price = price if price is not None else self.price
         sql = """
             UPDATE order_items
             SET order_id = ?, product_id = ?, quantity = ?, price = ?
-            WHERE order_item_id = ?
+            WHERE id = ?
         """
-        cursor.execute(sql, (order_id, product_id, quantity, price, self.order_item_id))
-        conn.commit()
-
-    def delete(self):
-        sql = "DELETE FROM order_items WHERE order_item_id = ?"
-        cursor.execute(sql, (self.order_item_id,))
+        cursor.execute(sql, (self.order_id, self.product_id, self.quantity, self.price, self.id))
         conn.commit()
