@@ -80,9 +80,3 @@ class Customer:
             customer = cls(*row)
             customers.append(customer)
         return customers
-    @classmethod
-    def drop_table(cls):
-        sql = "DROP TABLE IF EXISTS customers"
-        cursor.execute(sql)
-        conn.commit()
-        print("Customer table dropped successfully.")

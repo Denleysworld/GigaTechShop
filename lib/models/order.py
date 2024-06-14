@@ -25,12 +25,6 @@ class Order:
         conn.commit()
         print("Order table created successfully")
 
-    @classmethod
-    def drop_table(cls):
-        sql = "DROP TABLE IF EXISTS orders;"
-        cursor.execute(sql)
-        conn.commit()
-        print("Order table dropped successfully")
 
     def save(self):
         sql = """
@@ -53,3 +47,11 @@ class Order:
         cursor.execute(sql, (id,))
         row = cursor.fetchone()
         return cls(*row) if row else None
+
+    @classmethod
+    def select(cls):
+        sql = "SELECT * FROM orders"
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        orders = [cls(*row) for row in rows]
+        return orders

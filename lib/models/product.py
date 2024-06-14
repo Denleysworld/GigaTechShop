@@ -28,12 +28,6 @@ class Product:
         conn.commit()
         print("Product table created successfully")
 
-    @classmethod
-    def drop_table(cls):
-        sql = "DROP TABLE IF EXISTS products;"
-        cursor.execute(sql)
-        conn.commit()
-        print("Product table dropped successfully")
 
     def save(self):
         if self.id is None:

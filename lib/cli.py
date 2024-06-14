@@ -22,11 +22,7 @@ def main():
             print("Invalid choice")
 
 def create_tables():
-    Product.drop_table()
-    Customer.drop_table()
-    Order.drop_table()
-    OrderItem.drop_table()
-
+ 
     Product.create_table()
     Customer.create_table()
     Order.create_table()

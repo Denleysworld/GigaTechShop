@@ -9,7 +9,7 @@ class OrderItem:
         self.price = price
 
     def __repr__(self):
-        return f"<OrderItem {self.order_id} {self.product_id} {self.quantity}>"
+        return f"<OrderItem {self.id} {self.order_id} {self.product_id} {self.quantity}>"
 
     @classmethod
     def create_table(cls):
@@ -28,12 +28,8 @@ class OrderItem:
         conn.commit()
         print("OrderItem table created successfully")
 
-    @classmethod
-    def drop_table(cls):
-        sql = "DROP TABLE IF EXISTS order_items;"
-        cursor.execute(sql)
-        conn.commit()
-        print("OrderItem table dropped successfully")
+
+
 
     def save(self):
         sql = """
@@ -56,3 +52,11 @@ class OrderItem:
         cursor.execute(sql, (id,))
         row = cursor.fetchone()
         return cls(*row) if row else None
+
+    @classmethod
+    def select(cls):
+        sql = "SELECT * FROM order_items"
+        cursor.execute(sql)
+        rows = cursor.fetchall()
+        order_items = [cls(*row) for row in rows]
+        return order_items
