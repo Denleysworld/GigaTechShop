@@ -33,4 +33,11 @@ Giga Tech is a hardware technology shop that has a problem with management of th
     git clone https://github.com/Denleysworld/GigaTechShop.git
     cd lib
     ```
-
+## Running the project
+1. While in the same directory run the code
+   ```python-lib
+   python cli.py
+    or 
+   python3 cli.py
+   ```
+2. 
