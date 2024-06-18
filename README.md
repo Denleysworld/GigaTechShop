@@ -40,4 +40,5 @@ Giga Tech is a hardware technology shop that has a problem with management of th
     or 
    python3 cli.py
    ```
-2. 
+### Video explanation
+1. (Gigatech explanation video):https://www.loom.com/share/c33c11b3755b46b19bea90992ef600c3
